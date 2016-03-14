@@ -17,10 +17,10 @@
 package main
 
 import (
-	log "github.com/alecthomas/log4go"
 	"encoding/json"
 	"errors"
 	"fmt"
+	log "github.com/alecthomas/log4go"
 	"github.com/samuel/go-zookeeper/zk"
 	"net/rpc"
 	"strconv"
@@ -82,6 +82,12 @@ func InitZK() error {
 		for {
 			event := <-session
 			log.Info("zookeeper get a event: %s", event.State.String())
+			if event.State == zk.StateExpired {
+				log.Info("recreate node")
+				for _, workerId := range MyConf.WorkerId {
+					RegWorkerId(workerId)
+				}
+			}
 		}
 	}()
 	return nil
